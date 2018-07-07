@@ -17,7 +17,4 @@ const ToDo = mongoose.model('ToDo', {
   }
 })
 
-const todo = new ToDo()
-console.log(todo)
-
 module.exports = {ToDo}
