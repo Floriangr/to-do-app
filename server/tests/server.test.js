@@ -5,7 +5,9 @@ const {app} = require('./../server')
 const {ToDo} = require('./../models/todos')
 
 beforeEach((done) => {
-  ToDo.remove({}).then(() => done())
+  ToDo.remove({}).then(() => {
+    return ToDo.insertMany([{text: 'test'}, {text: 'test2'}])
+  }).then(() => done())
 })
 
 describe('Post /todos', () => {
@@ -23,13 +25,28 @@ describe('Post /todos', () => {
       if (err) {
         return done(err)
       }
-      ToDo.find().then((todos) => {
+      ToDo.find({text: 'some to-do'}).then((todos) => {
         expect(todos.length).toBe(1)
         expect(todos[0].text).toBe(text)
         done()
       }).catch((e) => done(e))
     })
   })
+
+describe('GET /todos', () => {
+  it('should get all todos', (done) => {
+    request(app)
+    .get('/todos')
+    .expect(200)
+    .expect((res) => {
+      expect(res.body.todos.length).toBe(2)
+    })
+    .end(done)
+  })
+})
+
+
+
 //   it('should not create to-do with invalid body data', (done) => {
 //     request(app)
 //     .post('/todos')
