@@ -26,14 +26,14 @@ app.get('/todos/:id', (req, res) => {
   const id = req.params.id
   console.log(id)
   if (! ObjectId.isValid(id)) {
-    return res.send("ID invalid")
+    return res.status(404).send("ID invalid")
   }
     ToDo.findById(id)
     .then((todo) => {
       if (!todo) {
-        console.log("No todo found")
+        return res.status(404).send("No todo found")
       }
-      return res.send(todo)
+      return res.status(200).send(todo)
     })
     .catch((e) => console.log("Error"))
 
