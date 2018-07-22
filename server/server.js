@@ -10,6 +10,7 @@ const app = express()
 
 app.use(bodyParser.json())
 
+const port = process.env.PORT || 3000;
 
 app.post('/todos', (req, res) => {
   const todo = new ToDo({text: req.body.text})
@@ -49,8 +50,8 @@ app.get('/todos', (req, res) => {
   }
 })
 
-app.listen(3000, () => {
-  console.log('Server listening on port 3000')
+app.listen(port, () => {
+  console.log('Server listening on port:', port)
 })
 
 module.exports = {app}
