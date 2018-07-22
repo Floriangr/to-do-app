@@ -37,9 +37,22 @@ app.get('/todos/:id', (req, res) => {
       return res.status(200).send(todo)
     })
     .catch((e) => console.log("Error"))
-
-
 })
+
+app.delete('/todos/:id', (req, res) => {
+  const id = req.params.id
+  if (! ObjectId.isValid(id)) {
+    return res.status(404).send("Id invalid")
+  }
+  ToDo.findByIdAndRemove(id)
+  .then((todo) => {
+    if (! todo) {
+      return res.status(404).send("Item didn't exist")
+    }
+    return res.status(200).send("Todo removed", todo)
+  })
+  .catch((e) => res.status(404).send())
+});
 
 app.get('/todos', (req, res) => {
   ToDo.find({}).then((todos) => {
