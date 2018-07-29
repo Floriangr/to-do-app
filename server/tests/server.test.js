@@ -7,7 +7,7 @@ const {ToDo} = require('./../models/todos')
 
 const todos = [
   {
-    _id: '5b43bab8df4cbb284c3ac2df',
+    _id: new ObjectId(),
     text: 'test'
   },
   {
@@ -16,11 +16,15 @@ const todos = [
   }
 ];
 
-// beforeEach((done) => {
-//   ToDo.remove({}).then(() => {
-//     return ToDo.insertMany([{text: 'test'}, {text: 'test2'}])
-//   }).then(() => done())
-// })
+beforeEach((done) => {
+  ToDo.remove({})
+  .then(() => {
+    return ToDo.insertMany(todos);
+  })
+  .then(() => done());
+});
+
+
 //
 // describe('Post /todos', () => {
 //   it('should create a new to-do', (done) => {
@@ -83,7 +87,28 @@ describe ('Get /todos/:id', () => {
   })
 })
 
-
+describe ('Delete /todos/:id', () => {
+  it('should delete a todo by id', (done) => {
+    const hexId = todos[0]._id.toHexString();
+    request(app)
+    .delete(`/todos/${hexId}`)
+    .expect(200)
+    .expect((res) => {
+      expect(res.body.todo._id).toBe(hexId);
+    })
+    .end((err, res) => {
+      if (err) {
+        return done(err)
+      }
+      request(app)
+      .get(`/todos/${res.body.todo_id}`)
+      .expect((res) => {
+        expect(res.body.todo).toNotExist()
+      })
+      .end(done)
+    })
+  })
+})
 
 
 

@@ -1,6 +1,7 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const {ObjectId} = require('mongodb')
+const _ = require('lodash')
 
 const {mongoose} = require('./db/mongoose')
 const {ToDo} = require('./models/todos')
@@ -37,7 +38,7 @@ app.get('/todos/:id', (req, res) => {
       return res.status(200).send(todo)
     })
     .catch((e) => console.log("Error"))
-})
+});
 
 app.delete('/todos/:id', (req, res) => {
   const id = req.params.id
@@ -49,7 +50,7 @@ app.delete('/todos/:id', (req, res) => {
     if (! todo) {
       return res.status(404).send("Item didn't exist")
     }
-    return res.status(200).send("Todo removed", todo)
+    return res.status(200).send({todo})
   })
   .catch((e) => res.status(404).send())
 });
@@ -62,6 +63,33 @@ app.get('/todos', (req, res) => {
     res.status(400).send(e)
   }
 })
+
+app.patch('/todos/:id', (req, res) => {
+  const id = req.params.id;
+  const body = _.pick(req.body, ['text', 'completed']);
+
+  if (!ObjectId.isValid(id)) {
+    return res.status(404).send();
+  }
+
+  if (_.isBoolean(body.completed) && body.completed) {
+    body.completedAt = new Date().getTime();
+  }
+    else {
+      body.completed = false;
+      body.completedAt = null;
+    }
+
+  ToDo.findByIdAndUpdate(id, {$set: body}, {new: true})
+  .then((todo) => {
+    if (!todo) {
+      return res.status(404).send();
+    }
+    res.send(todo)
+  }).catch((e) => {
+    res.status(400).send();
+  })
+});
 
 app.listen(port, () => {
   console.log('Server listening on port:', port)
