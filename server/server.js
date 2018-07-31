@@ -7,7 +7,27 @@ const {mongoose} = require('./db/mongoose')
 const {ToDo} = require('./models/todos')
 const {User} = require('./models/users')
 
-const app = express()
+const Prometheus = require('prom-client');
+
+const collectDefaultMetrics = Prometheus.collectDefaultMetrics;
+
+const counter = new Prometheus.Counter({
+  name: 'NODEEEEEEEEEEEEEEEEEEEEEE',
+  help: 'metric_help'
+});
+
+counter.inc(); // Inc with 1
+
+collectDefaultMetrics({ timeout: 5000 });
+
+const app = express();
+
+app.get('/metrics', (req, res) => {
+  res.set('Content-Type', Prometheus.register.contentType)
+  res.end(Prometheus.register.metrics())
+});
+
+
 
 app.use(bodyParser.json())
 
