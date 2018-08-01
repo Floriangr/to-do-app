@@ -18,7 +18,7 @@ const counter = new Prometheus.Counter({
 
 counter.inc(); // Inc with 1
 
-collectDefaultMetrics({ timeout: 5000 });
+collectDefaultMetrics({ prefix: 'node_test_' });
 
 const app = express();
 
