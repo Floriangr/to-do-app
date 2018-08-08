@@ -7,25 +7,52 @@ const {mongoose} = require('./db/mongoose')
 const {ToDo} = require('./models/todos')
 const {User} = require('./models/users')
 
-const Prometheus = require('prom-client');
-
-const collectDefaultMetrics = Prometheus.collectDefaultMetrics;
-
-const counter = new Prometheus.Counter({
-  name: 'NODEEEEEEEEEEEEEEEEEEEEEE',
-  help: 'metric_help'
-});
-
-counter.inc(); // Inc with 1
-
-collectDefaultMetrics({ prefix: 'node_test_' });
+var Prometheus = require('./../prometheus');
 
 const app = express();
 
-app.get('/metrics', (req, res) => {
-  res.set('Content-Type', Prometheus.register.contentType)
-  res.end(Prometheus.register.metrics())
-});
+/**
+ * The below arguments start the counter functions
+ */
+app.use(Prometheus.requestCounters);
+app.use(Prometheus.responseCounters);
+
+
+/**
+ * Enable collection of default metrics
+ */
+Prometheus.startCollection();
+
+/**
+ * Enable metrics endpoint
+ */
+Prometheus.injectMetricsRoute(app);
+
+
+
+
+
+
+
+// const Prometheus = require('prom-client');
+//
+// const collectDefaultMetrics = Prometheus.collectDefaultMetrics;
+//
+// const counter = new Prometheus.Counter({
+//   name: 'NODEEEEEEEEEEEEEEEEEEEEEE',
+//   help: 'metric_help'
+// });
+//
+// counter.inc(); // Inc with 1
+//
+// collectDefaultMetrics({ prefix: 'node_test_' });
+//
+
+//
+// app.get('/metrics', (req, res) => {
+//   res.set('Content-Type', Prometheus.register.contentType)
+//   res.end(Prometheus.register.metrics())
+// });
 
 
 
