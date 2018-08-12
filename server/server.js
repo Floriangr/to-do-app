@@ -1,3 +1,5 @@
+require("./config/config.js");
+
 const express = require('express')
 const bodyParser = require('body-parser')
 const {ObjectId} = require('mongodb')
@@ -17,7 +19,14 @@ const app = express();
 app.use(Prometheus.requestCounters);
 app.use(Prometheus.responseCounters);
 
-
+const requestCounter = new client.Counter({
+  name: 'http_request_counter',
+  help: 'Counts requests for all HTTP endpoints'
+});
+if (req.params.prop !== "metrics") {
+      console.log("in if")
+      requestCounter.inc();
+    }
 /**
  * Enable collection of default metrics
  */
@@ -58,7 +67,9 @@ Prometheus.injectMetricsRoute(app);
 
 app.use(bodyParser.json())
 
-const port = process.env.PORT || 3000;
+
+const port = process.env.PORT;
+
 
 app.post('/todos', (req, res) => {
   const todo = new ToDo({text: req.body.text})
