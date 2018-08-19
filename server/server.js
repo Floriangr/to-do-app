@@ -4,72 +4,35 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const {ObjectId} = require('mongodb')
 const _ = require('lodash')
+const client = require('prom-client');
 
 const {mongoose} = require('./db/mongoose')
 const {ToDo} = require('./models/todos')
 const {User} = require('./models/users')
 
-var Prometheus = require('./../prometheus');
-
 const app = express();
+app.use(bodyParser.json());
 
-/**
- * The below arguments start the counter functions
- */
-app.use(Prometheus.requestCounters);
-app.use(Prometheus.responseCounters);
+client.collectDefaultMetrics;
 
-const requestCounter = new client.Counter({
-  name: 'http_request_counter',
-  help: 'Counts requests for all HTTP endpoints'
+app.get('/metrics', (req, res) => {
+  res.set('Content-Type', client.register.contentType)
+  res.end(client.register.metrics())
 });
-if (req.params.prop !== "metrics") {
-      console.log("in if")
-      requestCounter.inc();
-    }
-/**
- * Enable collection of default metrics
- */
-Prometheus.startCollection();
-
-/**
- * Enable metrics endpoint
- */
-Prometheus.injectMetricsRoute(app);
-
-
-
-
-
-
-
-// const Prometheus = require('prom-client');
-//
-// const collectDefaultMetrics = Prometheus.collectDefaultMetrics;
-//
-// const counter = new Prometheus.Counter({
-//   name: 'NODEEEEEEEEEEEEEEEEEEEEEE',
-//   help: 'metric_help'
-// });
-//
-// counter.inc(); // Inc with 1
-//
-// collectDefaultMetrics({ prefix: 'node_test_' });
-//
-
-//
-// app.get('/metrics', (req, res) => {
-//   res.set('Content-Type', Prometheus.register.contentType)
-//   res.end(Prometheus.register.metrics())
-// });
-
-
-
-app.use(bodyParser.json())
-
 
 const port = process.env.PORT;
 
+app.post('/users', (req, res) => {
+  let user = new User(_.pick(req.body, ['email', 'password']));
+
+  user.save().then(() => {
+    return user.generateAuthToken();
+  })
+  .then((token) => {
+    res.header('x-auth', token).send(user)
+  })
+  .catch((e) => res.status(400).send(e));
+});
 
 app.post('/todos', (req, res) => {
   const todo = new ToDo({text: req.body.text})
