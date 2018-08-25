@@ -6,9 +6,11 @@ const {ObjectId} = require('mongodb')
 const _ = require('lodash')
 const client = require('prom-client');
 
-const {mongoose} = require('./db/mongoose')
-const {ToDo} = require('./models/todos')
-const {User} = require('./models/users')
+const {mongoose} = require('./db/mongoose');
+const {ToDo} = require('./models/todos');
+const {User} = require('./models/users');
+const {authenticate} = require('./middleware/authenticate');
+
 
 const app = express();
 app.use(bodyParser.json());
@@ -21,6 +23,10 @@ app.get('/metrics', (req, res) => {
 });
 
 const port = process.env.PORT;
+
+app.get('/users/me', authenticate, (req, res) => {
+    res.send(req.user);
+});
 
 app.post('/users', (req, res) => {
   let user = new User(_.pick(req.body, ['email', 'password']));
